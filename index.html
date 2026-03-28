@@ -389,17 +389,7 @@
   .tap-zone-5 { top: 50%; left: 0; transform: translateY(-50%); }
 
   .speech-warning {
-    display: none;
-    position: fixed;
-    bottom: 60px;
-    left: 50%;
-    transform: translateX(-50%);
-    font-family: 'Courier Prime', monospace;
-    font-size: 10px;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: var(--rust);
-    z-index: 15;
+    display: none !important;
   }
 </style>
 </head>
@@ -484,7 +474,7 @@ const EXCHANGES = {
     {
       id: 1,
       video: VIDEOS.e1,
-      keywords: ['spoil','hold','holding','baby','cuddle','pick up','arms'],
+      keywords: ['mom','spoil','holding'],
       resource: {
         label: 'From the AAP',
         title: 'Why holding your baby builds trust, not bad habits',
@@ -495,7 +485,7 @@ const EXCHANGES = {
     {
       id: 2,
       video: VIDEOS.e2,
-      keywords: ['breastfeed','breastfeeding','nursing','nurse','milk','hungry','latch','feed'],
+      keywords: ['breastfeeding','hungry'],
       resource: {
         label: 'From the AAP',
         title: 'Breastfeeding: AAP policy and what the science says',
@@ -506,7 +496,7 @@ const EXCHANGES = {
     {
       id: 3,
       video: VIDEOS.e3,
-      keywords: ['measles','vaccine','mmr','vaccinate','preschool','mandatory','shot','immunize'],
+      keywords: ['preschool','mandatory'],
       resource: {
         label: 'From the AAP',
         title: 'How to protect your child during a measles outbreak',
@@ -517,7 +507,7 @@ const EXCHANGES = {
     {
       id: 4,
       video: VIDEOS.e4,
-      keywords: ['gives kids measles','heard','rumor','true','cause','they say','people say'],
+      keywords: ["but i've heard","i've heard"],
       resource: {
         label: 'From the AAP',
         title: 'Measles: what parents need to know right now',
@@ -528,7 +518,7 @@ const EXCHANGES = {
     {
       id: 5,
       video: VIDEOS.e5,
-      keywords: ['fever','ear','103','sick','temperature','hot','ill','earache','ear ache'],
+      keywords: ['103','pulling on his ear','pulling on her ear'],
       resource: {
         label: 'From the AAP',
         title: 'Fever: when to call the pediatrician',
