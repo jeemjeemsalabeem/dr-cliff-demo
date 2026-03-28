@@ -100,9 +100,10 @@
   /* Video container */
   .video-wrap {
     position: relative;
-    width: 420px;
-    aspect-ratio: 9/16;
-    max-height: 70vh;
+    width: 85vw;
+    max-width: 1100px;
+    aspect-ratio: 16/9;
+    max-height: 80vh;
     border-radius: 4px;
     overflow: hidden;
     box-shadow: 0 40px 120px rgba(0,0,0,0.6), 0 0 0 1px rgba(181,145,88,0.15);
@@ -319,8 +320,8 @@
   .tap-zone-4 { bottom: 0; right: 0; }
   .tap-zone-5 { top: 50%; left: 0; transform: translateY(-50%); }
 
-  /* Loading state */
-  .loading-screen {
+  /* Start screen */
+  .start-screen {
     position: fixed;
     inset: 0;
     background: var(--navy);
@@ -329,42 +330,79 @@
     align-items: center;
     justify-content: center;
     z-index: 100;
+    cursor: pointer;
     transition: opacity 0.8s ease;
   }
 
-  .loading-screen.fade-out {
+  .start-screen.fade-out {
     opacity: 0;
     pointer-events: none;
   }
 
-  .loading-name {
-    font-family: 'Playfair Display', serif;
-    font-size: 36px;
-    font-weight: 700;
-    color: var(--cream);
-    margin-bottom: 8px;
-  }
-
-  .loading-line {
-    width: 40px;
-    height: 2px;
-    background: var(--gold);
-    margin: 16px auto;
-    animation: loading-line 1.5s ease-in-out infinite;
-  }
-
-  @keyframes loading-line {
-    0%, 100% { width: 40px; opacity: 0.4; }
-    50% { width: 80px; opacity: 1; }
-  }
-
-  .loading-sub {
+  .start-eyebrow {
     font-family: 'Courier Prime', monospace;
     font-size: 10px;
-    letter-spacing: 0.2em;
+    letter-spacing: 0.25em;
     text-transform: uppercase;
     color: var(--gold);
-    opacity: 0.7;
+    opacity: 0.8;
+    margin-bottom: 20px;
+  }
+
+  .start-name {
+    font-family: 'Playfair Display', serif;
+    font-size: 72px;
+    font-weight: 700;
+    color: var(--cream);
+    line-height: 1;
+    margin-bottom: 6px;
+  }
+
+  .start-title {
+    font-family: 'Source Serif 4', serif;
+    font-size: 16px;
+    font-weight: 300;
+    font-style: italic;
+    color: var(--cream);
+    opacity: 0.6;
+    margin-bottom: 48px;
+  }
+
+  .start-rule {
+    width: 40px;
+    height: 1px;
+    background: var(--gold);
+    margin: 0 auto 48px;
+  }
+
+  .start-btn {
+    font-family: 'Courier Prime', monospace;
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--navy);
+    background: var(--gold);
+    border: none;
+    padding: 14px 40px;
+    cursor: pointer;
+    border-radius: 2px;
+    transition: all 0.2s ease;
+  }
+
+  .start-btn:hover {
+    background: var(--cream);
+    transform: translateY(-1px);
+  }
+
+  .start-aap {
+    position: absolute;
+    bottom: 32px;
+    font-family: 'Courier Prime', monospace;
+    font-size: 9px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--gold);
+    opacity: 0.5;
   }
 
   /* Error / unsupported browser message */
@@ -384,11 +422,14 @@
 </head>
 <body>
 
-<!-- Loading screen -->
-<div class="loading-screen" id="loadingScreen">
-  <div class="loading-name">Dr. Cliff</div>
-  <div class="loading-line"></div>
-  <div class="loading-sub">Voice of 70,000 Pediatricians</div>
+<!-- Start screen -->
+<div class="start-screen" id="startScreen" onclick="handleStart()">
+  <div class="start-eyebrow">American Academy of Pediatrics</div>
+  <div class="start-name">Dr. Cliff</div>
+  <div class="start-title">Voice of 70,000 Pediatricians</div>
+  <div class="start-rule"></div>
+  <button class="start-btn">Meet Dr. Cliff</button>
+  <div class="start-aap">A parent's cure for medical misinformation</div>
 </div>
 
 <!-- Main stage -->
@@ -544,18 +585,17 @@ const video = document.getElementById('mainVideo');
 const listenIndicator = document.getElementById('listenIndicator');
 const resourceCard = document.getElementById('resourceCard');
 const statusText = document.getElementById('statusText');
-const loadingScreen = document.getElementById('loadingScreen');
+
 
 // ─── INIT ─────────────────────────────────────────────────────────
-window.addEventListener('load', () => {
+function handleStart() {
+  const startScreen = document.getElementById('startScreen');
+  startScreen.classList.add('fade-out');
   setTimeout(() => {
-    loadingScreen.classList.add('fade-out');
-    setTimeout(() => {
-      loadingScreen.style.display = 'none';
-      startGreeting();
-    }, 800);
-  }, 1200);
-});
+    startScreen.style.display = 'none';
+    startGreeting();
+  }, 800);
+}
 
 function startGreeting() {
   setState('greeting');
