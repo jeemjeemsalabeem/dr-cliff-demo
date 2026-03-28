@@ -181,10 +181,11 @@
   }
 
   .aap-logo {
-    height: 48px;
+    height: 44px;
     width: auto;
     opacity: 0.7;
-    filter: brightness(0) invert(1);
+    filter: invert(1);
+    mix-blend-mode: screen;
   }
 
   /* ─── LISTENING INDICATOR ──────────────────────────────────── */
@@ -597,6 +598,11 @@ function triggerExchange(exchange) {
   video.loop = false;
   video.play().catch(e => console.warn(e));
 
+  // Restart mic after video settles
+  setTimeout(() => {
+    try { recognition.start(); } catch(e) {}
+  }, 500);
+
   video.onended = () => {
     video.onended = null;
     showResult(exchange);
@@ -670,12 +676,20 @@ function initSpeech() {
     if (e.error === 'not-allowed') {
       document.getElementById('speechWarning').style.display = 'block';
     }
+    // On abort, restart after short delay
+    if (e.error === 'aborted') {
+      setTimeout(() => {
+        try { recognition.start(); } catch(e) {}
+      }, 300);
+    }
     console.warn('Speech error:', e.error);
   };
 
   // Always restart — never let it die
   recognition.onend = () => {
-    try { recognition.start(); } catch(e) {}
+    setTimeout(() => {
+      try { recognition.start(); } catch(e) {}
+    }, 100);
   };
 
   // Start immediately on init
