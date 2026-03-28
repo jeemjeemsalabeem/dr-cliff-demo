@@ -1,0 +1,739 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dr. Cliff — AAP Pediatric Knowledge Agent</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Source+Serif+4:ital,wght@0,300;0,400;1,300&family=Courier+Prime&display=swap');
+
+  :root {
+    --cream: #F3EBDD;
+    --navy: #2E3A34;
+    --gold: #B59158;
+    --rust: #9C5646;
+    --cream-dark: #E8DCC8;
+    --navy-light: #3d4f47;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--navy);
+    font-family: 'Source Serif 4', serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+  }
+
+  /* Subtle texture overlay */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg width='200' height='200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .stage {
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 1;
+  }
+
+  /* Header */
+  .header {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    padding: 24px 40px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    z-index: 10;
+  }
+
+  .wordmark {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+  }
+
+  .wordmark-name {
+    font-family: 'Playfair Display', serif;
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--cream);
+    letter-spacing: 0.02em;
+  }
+
+  .wordmark-tag {
+    font-family: 'Courier Prime', monospace;
+    font-size: 10px;
+    color: var(--gold);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+  }
+
+  .aap-badge {
+    font-family: 'Courier Prime', monospace;
+    font-size: 9px;
+    color: var(--gold);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    opacity: 0.8;
+    border: 1px solid rgba(181,145,88,0.3);
+    padding: 5px 10px;
+    border-radius: 2px;
+  }
+
+  /* Video container */
+  .video-wrap {
+    position: relative;
+    width: 420px;
+    aspect-ratio: 9/16;
+    max-height: 70vh;
+    border-radius: 4px;
+    overflow: hidden;
+    box-shadow: 0 40px 120px rgba(0,0,0,0.6), 0 0 0 1px rgba(181,145,88,0.15);
+  }
+
+  .video-wrap video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  /* Listening indicator */
+  .listen-indicator {
+    position: absolute;
+    bottom: 16px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(46,58,52,0.85);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(181,145,88,0.3);
+    border-radius: 20px;
+    padding: 8px 16px;
+    opacity: 0;
+    transition: opacity 0.4s ease;
+    pointer-events: none;
+    white-space: nowrap;
+  }
+
+  .listen-indicator.visible {
+    opacity: 1;
+  }
+
+  .pulse-dot {
+    width: 8px;
+    height: 8px;
+    background: var(--gold);
+    border-radius: 50%;
+    animation: pulse 1.4s ease-in-out infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.4; transform: scale(0.7); }
+  }
+
+  .listen-label {
+    font-family: 'Courier Prime', monospace;
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--cream);
+  }
+
+  /* Resource card */
+  .resource-card {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: var(--cream);
+    padding: 20px 24px 24px;
+    transform: translateY(100%);
+    transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+    border-top: 3px solid var(--gold);
+  }
+
+  .resource-card.visible {
+    transform: translateY(0);
+  }
+
+  .resource-label {
+    font-family: 'Courier Prime', monospace;
+    font-size: 9px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--rust);
+    margin-bottom: 8px;
+  }
+
+  .resource-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--navy);
+    line-height: 1.3;
+    margin-bottom: 14px;
+  }
+
+  .resource-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--navy);
+    color: var(--cream);
+    font-family: 'Courier Prime', monospace;
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    text-decoration: none;
+    padding: 8px 14px;
+    border-radius: 2px;
+    transition: background 0.2s ease;
+    margin-bottom: 10px;
+    display: block;
+    text-align: center;
+  }
+
+  .resource-link:hover {
+    background: var(--navy-light);
+  }
+
+  .resource-link-icon {
+    font-size: 12px;
+  }
+
+  .ask-again-btn {
+    display: block;
+    width: 100%;
+    text-align: center;
+    font-family: 'Courier Prime', monospace;
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--gold);
+    background: none;
+    border: 1px solid rgba(181,145,88,0.4);
+    padding: 8px;
+    border-radius: 2px;
+    cursor: pointer;
+    margin-top: 8px;
+    transition: all 0.2s ease;
+  }
+
+  .ask-again-btn:hover {
+    background: rgba(181,145,88,0.08);
+    border-color: var(--gold);
+  }
+
+  /* Footer */
+  .footer {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 20px 40px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    z-index: 10;
+  }
+
+  .mode-toggle {
+    display: flex;
+    gap: 4px;
+    background: rgba(243,235,221,0.08);
+    border: 1px solid rgba(181,145,88,0.2);
+    border-radius: 3px;
+    padding: 3px;
+  }
+
+  .mode-btn {
+    font-family: 'Courier Prime', monospace;
+    font-size: 9px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: rgba(243,235,221,0.5);
+    background: none;
+    border: none;
+    padding: 5px 10px;
+    cursor: pointer;
+    border-radius: 2px;
+    transition: all 0.2s ease;
+  }
+
+  .mode-btn.active {
+    background: var(--gold);
+    color: var(--navy);
+  }
+
+  .status-text {
+    font-family: 'Courier Prime', monospace;
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: rgba(243,235,221,0.3);
+    min-width: 120px;
+    text-align: right;
+  }
+
+  /* Manual backup buttons — hidden, tap corners */
+  .manual-triggers {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 50;
+  }
+
+  .tap-zone {
+    position: absolute;
+    width: 80px;
+    height: 80px;
+    pointer-events: all;
+    opacity: 0;
+    cursor: pointer;
+  }
+
+  .tap-zone-1 { top: 0; left: 0; }
+  .tap-zone-2 { top: 0; right: 0; }
+  .tap-zone-3 { bottom: 0; left: 0; }
+  .tap-zone-4 { bottom: 0; right: 0; }
+  .tap-zone-5 { top: 50%; left: 0; transform: translateY(-50%); }
+
+  /* Loading state */
+  .loading-screen {
+    position: fixed;
+    inset: 0;
+    background: var(--navy);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+    transition: opacity 0.8s ease;
+  }
+
+  .loading-screen.fade-out {
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .loading-name {
+    font-family: 'Playfair Display', serif;
+    font-size: 36px;
+    font-weight: 700;
+    color: var(--cream);
+    margin-bottom: 8px;
+  }
+
+  .loading-line {
+    width: 40px;
+    height: 2px;
+    background: var(--gold);
+    margin: 16px auto;
+    animation: loading-line 1.5s ease-in-out infinite;
+  }
+
+  @keyframes loading-line {
+    0%, 100% { width: 40px; opacity: 0.4; }
+    50% { width: 80px; opacity: 1; }
+  }
+
+  .loading-sub {
+    font-family: 'Courier Prime', monospace;
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--gold);
+    opacity: 0.7;
+  }
+
+  /* Error / unsupported browser message */
+  .speech-warning {
+    display: none;
+    font-family: 'Courier Prime', monospace;
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--rust);
+    text-align: center;
+    padding: 8px;
+    opacity: 0.8;
+  }
+
+</style>
+</head>
+<body>
+
+<!-- Loading screen -->
+<div class="loading-screen" id="loadingScreen">
+  <div class="loading-name">Dr. Cliff</div>
+  <div class="loading-line"></div>
+  <div class="loading-sub">Voice of 70,000 Pediatricians</div>
+</div>
+
+<!-- Main stage -->
+<div class="stage">
+
+  <!-- Header -->
+  <div class="header">
+    <div class="wordmark">
+      <span class="wordmark-name">Dr. Cliff</span>
+      <span class="wordmark-tag">Pediatric Knowledge Agent</span>
+    </div>
+    <div class="aap-badge">American Academy of Pediatrics</div>
+  </div>
+
+  <!-- Video -->
+  <div class="video-wrap">
+    <video id="mainVideo" playsinline></video>
+
+    <!-- Listening indicator -->
+    <div class="listen-indicator" id="listenIndicator">
+      <div class="pulse-dot"></div>
+      <span class="listen-label">Listening</span>
+    </div>
+
+    <!-- Resource card (slides up from bottom of video) -->
+    <div class="resource-card" id="resourceCard">
+      <div class="resource-label" id="resourceLabel">From the AAP</div>
+      <div class="resource-title" id="resourceTitle"></div>
+      <a class="resource-link" id="resourceLink" href="#" target="_blank">
+        <span id="resourceLinkText">Read the full guide</span>
+      </a>
+      <button class="ask-again-btn" id="askAgainBtn">Ask another question</button>
+    </div>
+  </div>
+
+  <div class="speech-warning" id="speechWarning">
+    Voice recognition unavailable — use tap zones
+  </div>
+
+  <!-- Footer -->
+  <div class="footer">
+    <div class="mode-toggle">
+      <button class="mode-btn active" id="btnDemo" onclick="setMode('demo')">Demo</button>
+      <button class="mode-btn" id="btnFull" onclick="setMode('full')">Full</button>
+    </div>
+    <div class="status-text" id="statusText">Initializing…</div>
+  </div>
+
+</div>
+
+<!-- Hidden manual tap zones (corners + left edge center) -->
+<div class="manual-triggers">
+  <div class="tap-zone tap-zone-1" onclick="manualTrigger(1)" title="Exchange 1"></div>
+  <div class="tap-zone tap-zone-2" onclick="manualTrigger(2)" title="Exchange 2"></div>
+  <div class="tap-zone tap-zone-3" onclick="manualTrigger(3)" title="Exchange 3"></div>
+  <div class="tap-zone tap-zone-4" onclick="manualTrigger(4)" title="Exchange 4"></div>
+  <div class="tap-zone tap-zone-5" onclick="manualTrigger(5)" title="Exchange 5"></div>
+</div>
+
+<script>
+// ─── CONFIGURATION ────────────────────────────────────────────────
+const ASSETS = 'assets/';
+
+const VIDEOS = {
+  greeting: ASSETS + 'greeting.mp4',
+  loop:     ASSETS + 'loop.mp4',
+  e1:       ASSETS + 'exchange1.mp4',
+  e2:       ASSETS + 'exchange2.mp4',
+  e3:       ASSETS + 'exchange3.mp4',
+  e4:       ASSETS + 'exchange4.mp4',
+  e5:       ASSETS + 'exchange5.mp4',
+};
+
+const EXCHANGES = {
+  demo: [
+    {
+      id: 1,
+      video: VIDEOS.e1,
+      keywords: ['spoil','hold','holding','baby','cuddle','pick up','arms'],
+      resource: {
+        label: 'From the AAP',
+        title: 'Why holding your baby builds trust, not bad habits',
+        url: 'https://www.healthychildren.org/English/ages-stages/baby/Pages/Babys-First-1000-Days-AAP-Policy-Explained.aspx',
+        linkText: 'Read the full guide →',
+        isPDF: false,
+      }
+    },
+    {
+      id: 2,
+      video: VIDEOS.e2,
+      keywords: ['breastfeed','breastfeeding','nursing','nurse','milk','hungry','latch','feed'],
+      resource: {
+        label: 'AAP Resource — PDF',
+        title: 'Breastfeeding: AAP Policy & What the Science Says',
+        url: 'https://www.healthychildren.org/English/ages-stages/baby/breastfeeding/Pages/Where-We-Stand-Breastfeeding.aspx',
+        linkText: 'Download the guide ↓',
+        isPDF: false,
+      }
+    },
+    {
+      id: 3,
+      video: VIDEOS.e3,
+      keywords: ['measles','vaccine','mmr','vaccinate','preschool','mandatory','shot','immunize'],
+      resource: {
+        label: 'From the AAP',
+        title: 'How to protect your child during a measles outbreak',
+        url: 'https://www.healthychildren.org/English/safety-prevention/immunizations/Pages/how-to-protect-your-children-during-a-measles-outbreak.aspx',
+        linkText: 'Read the full guide →',
+        isPDF: false,
+      }
+    },
+    {
+      id: 4,
+      video: VIDEOS.e4,
+      keywords: ['gives kids measles','heard','rumor','true','cause','they say','people say'],
+      resource: {
+        label: 'From the AAP',
+        title: 'Measles: what parents need to know right now',
+        url: 'https://www.healthychildren.org/English/health-issues/vaccine-preventable-diseases/Pages/Measles.aspx',
+        linkText: 'Read the full guide →',
+        isPDF: false,
+      }
+    },
+    {
+      id: 5,
+      video: VIDEOS.e5,
+      keywords: ['fever','ear','103','sick','temperature','hot','ill','ear ache','earache'],
+      resource: {
+        label: 'From the AAP',
+        title: 'Fever: when to call the pediatrician',
+        url: 'https://www.healthychildren.org/English/health-issues/conditions/fever/Pages/When-to-Call-the-Pediatrician.aspx',
+        linkText: 'Read the full guide →',
+        isPDF: false,
+      }
+    },
+  ],
+  full: [] // mirrors demo — extend here if full mode has different exchanges
+};
+
+// Full mode mirrors demo for now
+EXCHANGES.full = EXCHANGES.demo;
+
+// ─── STATE ────────────────────────────────────────────────────────
+let mode = 'demo';
+let state = 'loading'; // loading | greeting | listening | playing | result
+let recognition = null;
+let speechSupported = false;
+let currentExchange = null;
+let greetingDone = false;
+let listenTimeout = null;
+
+const video = document.getElementById('mainVideo');
+const listenIndicator = document.getElementById('listenIndicator');
+const resourceCard = document.getElementById('resourceCard');
+const statusText = document.getElementById('statusText');
+const loadingScreen = document.getElementById('loadingScreen');
+
+// ─── INIT ─────────────────────────────────────────────────────────
+window.addEventListener('load', () => {
+  setTimeout(() => {
+    loadingScreen.classList.add('fade-out');
+    setTimeout(() => {
+      loadingScreen.style.display = 'none';
+      startGreeting();
+    }, 800);
+  }, 1200);
+});
+
+function startGreeting() {
+  setState('greeting');
+  playVideo(VIDEOS.greeting, () => {
+    greetingDone = true;
+    startListening();
+  });
+}
+
+// ─── VIDEO PLAYBACK ───────────────────────────────────────────────
+function playVideo(src, onEnd) {
+  stopListeningMic();
+  hideResourceCard();
+  hideListenIndicator();
+
+  video.src = src;
+  video.loop = false;
+  video.play().catch(e => console.warn('Video play failed:', e));
+
+  video.onended = () => {
+    video.onended = null;
+    if (onEnd) onEnd();
+  };
+}
+
+function playLoop() {
+  video.src = VIDEOS.loop;
+  video.loop = true;
+  video.play().catch(e => console.warn('Loop play failed:', e));
+}
+
+// ─── LISTENING STATE ──────────────────────────────────────────────
+function startListening() {
+  setState('listening');
+  playLoop();
+  showListenIndicator();
+  startListeningMic();
+  setStatus('Listening…');
+}
+
+function showListenIndicator() {
+  listenIndicator.classList.add('visible');
+}
+
+function hideListenIndicator() {
+  listenIndicator.classList.remove('visible');
+}
+
+// ─── SPEECH RECOGNITION ───────────────────────────────────────────
+function initSpeech() {
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SpeechRecognition) {
+    document.getElementById('speechWarning').style.display = 'block';
+    speechSupported = false;
+    return;
+  }
+  speechSupported = true;
+  recognition = new SpeechRecognition();
+  recognition.continuous = true;
+  recognition.interimResults = true;
+  recognition.lang = 'en-US';
+
+  recognition.onresult = (e) => {
+    if (state !== 'listening') return;
+    let transcript = '';
+    for (let i = e.resultIndex; i < e.results.length; i++) {
+      transcript += e.results[i][0].transcript;
+    }
+    transcript = transcript.toLowerCase();
+    matchKeywords(transcript);
+  };
+
+  recognition.onerror = (e) => {
+    if (e.error !== 'no-speech') console.warn('Speech error:', e.error);
+  };
+
+  recognition.onend = () => {
+    // Auto-restart if we're in listening state
+    if (state === 'listening') {
+      try { recognition.start(); } catch(e) {}
+    }
+  };
+}
+
+function startListeningMic() {
+  if (!speechSupported) return;
+  try { recognition.start(); } catch(e) {}
+}
+
+function stopListeningMic() {
+  if (!speechSupported || !recognition) return;
+  try { recognition.stop(); } catch(e) {}
+}
+
+function matchKeywords(transcript) {
+  const exchanges = EXCHANGES[mode];
+  for (const ex of exchanges) {
+    for (const kw of ex.keywords) {
+      if (transcript.includes(kw)) {
+        triggerExchange(ex);
+        return;
+      }
+    }
+  }
+}
+
+// ─── EXCHANGE TRIGGER ─────────────────────────────────────────────
+function triggerExchange(exchange) {
+  if (state === 'playing') return; // don't interrupt
+  currentExchange = exchange;
+  setState('playing');
+  setStatus(`Exchange ${exchange.id}`);
+
+  playVideo(exchange.video, () => {
+    // Video ended — show result state
+    showResultState(exchange);
+  });
+}
+
+function showResultState(exchange) {
+  setState('result');
+  // Hold on last frame (video ended, src stays)
+  video.loop = false;
+
+  // Show resource card
+  showResourceCard(exchange.resource);
+
+  // Mic back on — user can ask again
+  showListenIndicator();
+  startListeningMic();
+  setStatus('Ask another question');
+}
+
+// ─── RESOURCE CARD ────────────────────────────────────────────────
+function showResourceCard(resource) {
+  document.getElementById('resourceLabel').textContent = resource.label;
+  document.getElementById('resourceTitle').textContent = resource.title;
+  document.getElementById('resourceLinkText').textContent = resource.linkText;
+  const link = document.getElementById('resourceLink');
+  link.href = resource.url;
+  link.target = '_blank';
+  setTimeout(() => resourceCard.classList.add('visible'), 100);
+}
+
+function hideResourceCard() {
+  resourceCard.classList.remove('visible');
+}
+
+document.getElementById('askAgainBtn').addEventListener('click', () => {
+  hideResourceCard();
+  startListening();
+});
+
+// ─── MODE TOGGLE ──────────────────────────────────────────────────
+function setMode(m) {
+  mode = m;
+  document.getElementById('btnDemo').classList.toggle('active', m === 'demo');
+  document.getElementById('btnFull').classList.toggle('active', m === 'full');
+}
+
+// ─── MANUAL BACKUP TRIGGERS (hidden corners) ──────────────────────
+function manualTrigger(n) {
+  const exchange = EXCHANGES[mode].find(e => e.id === n);
+  if (exchange) triggerExchange(exchange);
+}
+
+// ─── STATUS ───────────────────────────────────────────────────────
+function setState(s) {
+  state = s;
+}
+
+function setStatus(text) {
+  statusText.textContent = text;
+}
+
+// ─── BOOT ─────────────────────────────────────────────────────────
+initSpeech();
+
+</script>
+</body>
+</html>
