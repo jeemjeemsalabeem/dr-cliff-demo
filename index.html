@@ -181,13 +181,16 @@
     text-transform: uppercase;
   }
 
-  .aap-logo {
-    height: 44px;
-    width: auto;
-    opacity: 0.65;
-    filter: invert(1);
-    mix-blend-mode: screen;
-    display: block;
+  .aap-badge {
+    font-family: 'Courier Prime', monospace;
+    font-size: 9px;
+    color: var(--gold);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    opacity: 0.8;
+    border: 1px solid rgba(181,145,88,0.3);
+    padding: 5px 10px;
+    border-radius: 2px;
   }
 
   /* ─── LISTENING INDICATOR ──────────────────────────────────── */
@@ -423,7 +426,7 @@
     <span class="wordmark-name">Dr. Cliff</span>
     <span class="wordmark-tag">The Voice of 67,000 Pediatricians</span>
   </div>
-  <img class="aap-logo" src="assets/aap-logo.png" alt="American Academy of Pediatrics" />
+  <div class="aap-badge">American Academy of Pediatrics</div>
 </div>
 
 <!-- Listening indicator -->
@@ -555,6 +558,10 @@ const statusText = document.getElementById('statusText');
 function handleStart() {
   const startScreen = document.getElementById('startScreen');
   startScreen.classList.add('fade-out');
+
+  // Start mic HERE — inside user gesture — Chrome requires this
+  try { recognition.start(); } catch(e) {}
+
   setTimeout(() => {
     startScreen.style.display = 'none';
     playGreeting();
