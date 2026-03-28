@@ -2,466 +2,392 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Dr. Cliff — AAP Pediatric Knowledge Agent</title>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Source+Serif+4:ital,wght@0,300;0,400;1,300&family=Courier+Prime&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Source+Serif+4:ital,wght@0,300;0,400;1,300&family=Courier+Prime&display=swap');
 
-  :root {
-    --cream: #F3EBDD;
-    --navy: #2E3A34;
-    --gold: #B59158;
-    --rust: #9C5646;
-    --cream-dark: #E8DCC8;
-    --navy-light: #3d4f47;
-  }
+/* ─── RESET & BASE ─────────────────────────────────────────────── */
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
-  * { margin: 0; padding: 0; box-sizing: border-box; }
+:root {
+  --cream: #F3EBDD;
+  --navy: #2E3A34;
+  --gold: #B59158;
+  --rust: #9C5646;
+  --navy-light: #3d4f47;
+}
 
-  body {
-    background: var(--navy);
-    font-family: 'Source Serif 4', serif;
-    min-height: 100vh;
-    overflow: hidden;
-  }
+html, body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: var(--navy);
+  font-family: 'Source Serif 4', serif;
+}
 
-  /* ─── START SCREEN ─────────────────────────────────────────── */
-  .start-screen {
-    position: fixed;
-    inset: 0;
-    background: var(--navy);
-    background-image: url('assets/poster.png');
-    background-size: cover;
-    background-position: center top;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    z-index: 100;
-    cursor: pointer;
-    transition: opacity 0.8s ease;
-  }
+/* ─── START SCREEN ─────────────────────────────────────────────── */
+#startScreen {
+  position: fixed;
+  inset: 0;
+  background: var(--navy) url('assets/poster.png') center top / cover no-repeat;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  cursor: pointer;
+  transition: opacity 0.8s ease;
+}
 
-  .start-screen::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(to bottom, rgba(46,58,52,0.5) 0%, rgba(46,58,52,0.72) 100%);
-    z-index: 0;
-  }
+#startScreen::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to bottom, rgba(46,58,52,0.45) 0%, rgba(46,58,52,0.72) 100%);
+}
 
-  .start-screen > * {
-    position: relative;
-    z-index: 1;
-  }
+#startScreen > * { position: relative; z-index: 1; }
 
-  .start-screen.fade-out {
-    opacity: 0;
-    pointer-events: none;
-  }
+#startScreen.hidden {
+  opacity: 0;
+  pointer-events: none;
+}
 
-  .start-eyebrow {
-    font-family: 'Courier Prime', monospace;
-    font-size: 10px;
-    letter-spacing: 0.25em;
-    text-transform: uppercase;
-    color: var(--gold);
-    opacity: 0.9;
-    margin-bottom: 20px;
-  }
+.ss-eyebrow {
+  font-family: 'Courier Prime', monospace;
+  font-size: clamp(8px, 1.5vw, 11px);
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 16px;
+}
 
-  .start-name {
-    font-family: 'Playfair Display', serif;
-    font-size: 72px;
-    font-weight: 700;
-    color: var(--cream);
-    line-height: 1;
-    margin-bottom: 6px;
-    text-shadow: 0 2px 20px rgba(0,0,0,0.4);
-  }
+.ss-name {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(48px, 8vw, 80px);
+  font-weight: 700;
+  color: var(--cream);
+  line-height: 1;
+  text-shadow: 0 2px 24px rgba(0,0,0,0.5);
+  margin-bottom: 8px;
+}
 
-  .start-title {
-    font-family: 'Source Serif 4', serif;
-    font-size: 16px;
-    font-weight: 300;
-    font-style: italic;
-    color: var(--cream);
-    opacity: 0.75;
-    margin-bottom: 48px;
-  }
+.ss-sub {
+  font-family: 'Source Serif 4', serif;
+  font-size: clamp(13px, 2vw, 17px);
+  font-weight: 300;
+  font-style: italic;
+  color: var(--cream);
+  opacity: 0.75;
+  margin-bottom: 44px;
+}
 
-  .start-rule {
-    width: 40px;
-    height: 1px;
-    background: var(--gold);
-    margin: 0 auto 48px;
-  }
+.ss-rule {
+  width: 36px;
+  height: 1px;
+  background: var(--gold);
+  margin: 0 auto 44px;
+}
 
-  .start-btn {
-    font-family: 'Courier Prime', monospace;
-    font-size: 11px;
-    letter-spacing: 0.2em;
-    text-transform: uppercase;
-    color: var(--navy);
-    background: var(--gold);
-    border: none;
-    padding: 14px 40px;
-    cursor: pointer;
-    border-radius: 2px;
-    transition: all 0.2s ease;
-  }
+.ss-btn {
+  font-family: 'Courier Prime', monospace;
+  font-size: clamp(9px, 1.5vw, 12px);
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--navy);
+  background: var(--gold);
+  border: none;
+  padding: clamp(10px, 2vw, 15px) clamp(28px, 5vw, 44px);
+  cursor: pointer;
+  border-radius: 2px;
+  transition: background 0.2s ease, transform 0.15s ease;
+}
 
-  .start-btn:hover {
-    background: var(--cream);
-    transform: translateY(-1px);
-  }
+.ss-btn:hover { background: var(--cream); transform: translateY(-1px); }
 
-  .start-aap {
-    position: absolute;
-    bottom: 32px;
-    font-family: 'Courier Prime', monospace;
-    font-size: 9px;
-    letter-spacing: 0.18em;
-    text-transform: uppercase;
-    color: var(--gold);
-    opacity: 0.6;
-  }
+.ss-tagline {
+  position: absolute;
+  bottom: clamp(20px, 4vh, 36px);
+  font-family: 'Courier Prime', monospace;
+  font-size: clamp(7px, 1.2vw, 10px);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--gold);
+  opacity: 0.55;
+}
 
-  /* ─── FULL BLEED VIDEO ─────────────────────────────────────── */
-  .video-wrap {
-    position: fixed;
-    inset: 0;
-    width: 100vw;
-    height: 100vh;
-    overflow: hidden;
-    z-index: 1;
-  }
+/* ─── FULL BLEED VIDEO ─────────────────────────────────────────── */
+#videoWrap {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+}
 
-  .video-wrap video {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    display: block;
-  }
+#mainVideo {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center top;
+  display: block;
+}
 
-  /* ─── HEADER ───────────────────────────────────────────────── */
-  .header {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    padding: 24px 40px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    z-index: 10;
-    background: linear-gradient(to bottom, rgba(46,58,52,0.75) 0%, transparent 100%);
-  }
+/* ─── HEADER ───────────────────────────────────────────────────── */
+#header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  padding: clamp(14px, 3vh, 26px) clamp(16px, 4vw, 44px);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  z-index: 10;
+  background: linear-gradient(to bottom, rgba(46,58,52,0.8) 0%, transparent 100%);
+}
 
-  .wordmark {
-    display: flex;
-    flex-direction: column;
-    gap: 3px;
-  }
+.wordmark { display: flex; flex-direction: column; gap: 2px; }
 
-  .wordmark-name {
-    font-family: 'Playfair Display', serif;
-    font-size: 22px;
-    font-weight: 700;
-    color: var(--cream);
-    letter-spacing: 0.02em;
-    line-height: 1;
-  }
+.wordmark-name {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(16px, 3vw, 24px);
+  font-weight: 700;
+  color: var(--cream);
+  line-height: 1;
+}
 
-  .wordmark-tag {
-    font-family: 'Courier Prime', monospace;
-    font-size: 9px;
-    color: var(--gold);
-    letter-spacing: 0.15em;
-    text-transform: uppercase;
-  }
+.wordmark-tag {
+  font-family: 'Courier Prime', monospace;
+  font-size: clamp(7px, 1.2vw, 10px);
+  color: var(--gold);
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+}
 
-  .aap-badge {
-    font-family: 'Courier Prime', monospace;
-    font-size: 9px;
-    color: var(--gold);
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    opacity: 0.8;
-    border: 1px solid rgba(181,145,88,0.3);
-    padding: 5px 10px;
-    border-radius: 2px;
-  }
+.aap-badge {
+  font-family: 'Courier Prime', monospace;
+  font-size: clamp(7px, 1vw, 9px);
+  color: var(--gold);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  opacity: 0.8;
+  border: 1px solid rgba(181,145,88,0.35);
+  padding: clamp(4px, 0.8vh, 6px) clamp(8px, 1.5vw, 12px);
+  border-radius: 2px;
+  white-space: nowrap;
+}
 
-  /* ─── LISTENING INDICATOR ──────────────────────────────────── */
-  .listen-indicator {
-    position: fixed;
-    bottom: 72px;
-    left: 50%;
-    transform: translateX(-50%);
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    background: rgba(46,58,52,0.85);
-    backdrop-filter: blur(8px);
-    border: 1px solid rgba(181,145,88,0.3);
-    border-radius: 20px;
-    padding: 8px 16px;
-    opacity: 0;
-    transition: opacity 0.4s ease;
-    pointer-events: none;
-    white-space: nowrap;
-    z-index: 15;
-  }
+/* ─── LISTEN INDICATOR ─────────────────────────────────────────── */
+#listenIndicator {
+  position: fixed;
+  bottom: clamp(64px, 10vh, 80px);
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(46,58,52,0.88);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(181,145,88,0.3);
+  border-radius: 20px;
+  padding: 8px 18px;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  pointer-events: none;
+  white-space: nowrap;
+  z-index: 15;
+}
 
-  .listen-indicator.visible { opacity: 1; }
+#listenIndicator.visible { opacity: 1; }
 
-  .pulse-dot {
-    width: 8px;
-    height: 8px;
-    background: var(--gold);
-    border-radius: 50%;
-    animation: pulse 1.4s ease-in-out infinite;
-  }
+.pulse-dot {
+  width: 8px;
+  height: 8px;
+  background: var(--gold);
+  border-radius: 50%;
+  flex-shrink: 0;
+  animation: pulse 1.4s ease-in-out infinite;
+}
 
-  @keyframes pulse {
-    0%, 100% { opacity: 1; transform: scale(1); }
-    50% { opacity: 0.4; transform: scale(0.7); }
-  }
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.35; transform: scale(0.65); }
+}
 
-  .listen-label {
-    font-family: 'Courier Prime', monospace;
-    font-size: 10px;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: var(--cream);
-  }
+.listen-label {
+  font-family: 'Courier Prime', monospace;
+  font-size: clamp(8px, 1.5vw, 11px);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--cream);
+}
 
-  /* ─── RESOURCE CARD ────────────────────────────────────────── */
-  .resource-card {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    background: rgba(243,235,221,0.96);
-    backdrop-filter: blur(12px);
-    padding: 20px 40px 32px;
-    transform: translateY(100%);
-    transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
-    border-top: 3px solid var(--gold);
-    z-index: 20;
-  }
+/* ─── RESOURCE CARD ────────────────────────────────────────────── */
+#resourceCard {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: rgba(243,235,221,0.97);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  padding: clamp(16px, 3vh, 22px) clamp(16px, 4vw, 44px) clamp(24px, 5vh, 36px);
+  border-top: 3px solid var(--gold);
+  z-index: 20;
+  transform: translateY(100%);
+  transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
 
-  .resource-card.visible { transform: translateY(0); }
+#resourceCard.visible { transform: translateY(0); }
 
-  .resource-label {
-    font-family: 'Courier Prime', monospace;
-    font-size: 9px;
-    letter-spacing: 0.18em;
-    text-transform: uppercase;
-    color: var(--rust);
-    margin-bottom: 8px;
-  }
+.rc-label {
+  font-family: 'Courier Prime', monospace;
+  font-size: clamp(7px, 1.2vw, 9px);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--rust);
+  margin-bottom: 6px;
+}
 
-  .resource-title {
-    font-family: 'Playfair Display', serif;
-    font-size: 14px;
-    font-weight: 600;
-    color: var(--navy);
-    line-height: 1.3;
-    margin-bottom: 14px;
-  }
+.rc-title {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(12px, 2vw, 15px);
+  font-weight: 600;
+  color: var(--navy);
+  line-height: 1.3;
+  margin-bottom: 12px;
+}
 
-  .resource-link {
-    display: block;
-    text-align: center;
-    background: var(--navy);
-    color: var(--cream);
-    font-family: 'Courier Prime', monospace;
-    font-size: 10px;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    text-decoration: none;
-    padding: 8px 14px;
-    border-radius: 2px;
-    transition: background 0.2s ease;
-    margin-bottom: 10px;
-  }
+.rc-link {
+  display: block;
+  text-align: center;
+  background: var(--navy);
+  color: var(--cream);
+  font-family: 'Courier Prime', monospace;
+  font-size: clamp(8px, 1.3vw, 10px);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  text-decoration: none;
+  padding: clamp(7px, 1.2vh, 10px) 14px;
+  border-radius: 2px;
+  transition: background 0.2s ease;
+  margin-bottom: 8px;
+}
 
-  .resource-link:hover { background: var(--navy-light); }
+.rc-link:hover { background: var(--navy-light); }
 
-  .ask-again-btn {
-    display: block;
-    width: 100%;
-    text-align: center;
-    font-family: 'Courier Prime', monospace;
-    font-size: 10px;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: var(--gold);
-    background: none;
-    border: 1px solid rgba(181,145,88,0.4);
-    padding: 8px;
-    border-radius: 2px;
-    cursor: pointer;
-    margin-top: 8px;
-    transition: all 0.2s ease;
-  }
+.rc-again {
+  display: block;
+  width: 100%;
+  text-align: center;
+  font-family: 'Courier Prime', monospace;
+  font-size: clamp(8px, 1.3vw, 10px);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--gold);
+  background: none;
+  border: 1px solid rgba(181,145,88,0.4);
+  padding: clamp(6px, 1vh, 9px);
+  border-radius: 2px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
 
-  .ask-again-btn:hover {
-    background: rgba(181,145,88,0.08);
-    border-color: var(--gold);
-  }
+.rc-again:hover { background: rgba(181,145,88,0.08); border-color: var(--gold); }
 
-  /* ─── FOOTER ───────────────────────────────────────────────── */
-  .footer {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    padding: 20px 40px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    z-index: 10;
-    background: linear-gradient(to top, rgba(46,58,52,0.65) 0%, transparent 100%);
-  }
+/* ─── FOOTER ───────────────────────────────────────────────────── */
+#footer {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: clamp(12px, 2.5vh, 22px) clamp(16px, 4vw, 44px);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  z-index: 10;
+  background: linear-gradient(to top, rgba(46,58,52,0.7) 0%, transparent 100%);
+  pointer-events: none;
+}
 
-  .mode-toggle {
-    display: flex;
-    gap: 4px;
-    background: rgba(243,235,221,0.08);
-    border: 1px solid rgba(181,145,88,0.2);
-    border-radius: 3px;
-    padding: 3px;
-  }
+.mode-toggle {
+  display: flex;
+  gap: 3px;
+  background: rgba(243,235,221,0.08);
+  border: 1px solid rgba(181,145,88,0.2);
+  border-radius: 3px;
+  padding: 3px;
+  pointer-events: all;
+}
 
-  .mode-btn {
-    font-family: 'Courier Prime', monospace;
-    font-size: 9px;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: rgba(243,235,221,0.5);
-    background: none;
-    border: none;
-    padding: 5px 10px;
-    cursor: pointer;
-    border-radius: 2px;
-    transition: all 0.2s ease;
-  }
+.mode-btn {
+  font-family: 'Courier Prime', monospace;
+  font-size: clamp(7px, 1.2vw, 9px);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(243,235,221,0.5);
+  background: none;
+  border: none;
+  padding: 5px 10px;
+  cursor: pointer;
+  border-radius: 2px;
+  transition: all 0.2s ease;
+}
 
-  .mode-btn.active {
-    background: var(--gold);
-    color: var(--navy);
-  }
+.mode-btn.active { background: var(--gold); color: var(--navy); }
 
-  .status-text {
-    font-family: 'Courier Prime', monospace;
-    font-size: 10px;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: rgba(243,235,221,0.3);
-    min-width: 120px;
-    text-align: right;
-  }
+#statusText {
+  font-family: 'Courier Prime', monospace;
+  font-size: clamp(7px, 1.2vw, 10px);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(243,235,221,0.25);
+}
 
-  /* ─── MANUAL TAP ZONES ─────────────────────────────────────── */
-  .manual-triggers {
-    position: fixed;
-    inset: 0;
-    pointer-events: none;
-    z-index: 50;
-  }
+/* ─── TAP ZONES ────────────────────────────────────────────────── */
+#tapZones {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 50;
+}
 
-  .tap-zone {
-    position: absolute;
-    width: 80px;
-    height: 80px;
-    pointer-events: all;
-    opacity: 0;
-    cursor: pointer;
-  }
+.tz {
+  position: absolute;
+  width: 88px;
+  height: 88px;
+  pointer-events: all;
+  opacity: 0;
+  -webkit-tap-highlight-color: transparent;
+}
 
-  .tap-zone-1 { top: 0; left: 0; }
-  .tap-zone-2 { top: 0; right: 0; }
-  .tap-zone-3 { bottom: 0; left: 0; }
-  .tap-zone-4 { bottom: 0; right: 0; }
-  .tap-zone-5 { top: 50%; left: 0; transform: translateY(-50%); }
-
-  .speech-warning { display: none !important; }
-
-  @media (max-width: 768px) {
-    .video-wrap video {
-      object-position: center top;
-    }
-
-    .header {
-      padding: 16px 20px;
-    }
-
-    .wordmark-name {
-      font-size: 16px;
-    }
-
-    .wordmark-tag {
-      font-size: 7px;
-      letter-spacing: 0.1em;
-    }
-
-    .aap-badge {
-      font-size: 7px;
-      padding: 4px 8px;
-    }
-
-    .listen-indicator {
-      bottom: 80px;
-    }
-
-    .resource-card {
-      padding: 16px 20px 100px;
-    }
-
-    .resource-title {
-      font-size: 13px;
-    }
-
-    .footer {
-      padding: 12px 20px;
-    }
-
-    .start-name {
-      font-size: 52px;
-    }
-
-    .start-title {
-      font-size: 14px;
-    }
-
-    .start-btn {
-      padding: 12px 32px;
-    }
-  }
+.tz-1 { top: 0; left: 0; }
+.tz-2 { top: 0; right: 0; }
+.tz-3 { bottom: 80px; left: 0; }
+.tz-4 { bottom: 80px; right: 0; }
+.tz-5 { top: 50%; left: 0; transform: translateY(-50%); }
 </style>
 </head>
 <body>
 
-<!-- Start screen -->
-<div class="start-screen" id="startScreen" onclick="handleStart()">
-  <div class="start-eyebrow">American Academy of Pediatrics</div>
-  <div class="start-name">Dr. Cliff</div>
-  <div class="start-title">The Voice of 67,000 Pediatricians</div>
-  <div class="start-rule"></div>
-  <button class="start-btn">Meet Dr. Cliff</button>
-  <div class="start-aap">A parent's cure for medical misinformation</div>
+<!-- START SCREEN -->
+<div id="startScreen">
+  <div class="ss-eyebrow">American Academy of Pediatrics</div>
+  <div class="ss-name">Dr. Cliff</div>
+  <div class="ss-sub">The Voice of 67,000 Pediatricians</div>
+  <div class="ss-rule"></div>
+  <button class="ss-btn" onclick="handleStart()">Meet Dr. Cliff</button>
+  <div class="ss-tagline">A parent's cure for medical misinformation</div>
 </div>
 
-<!-- Full bleed video -->
-<div class="video-wrap">
-  <video id="mainVideo" playsinline></video>
+<!-- VIDEO -->
+<div id="videoWrap">
+  <video id="mainVideo" playsinline webkit-playsinline></video>
 </div>
 
-<!-- Header -->
-<div class="header">
+<!-- HEADER -->
+<div id="header">
   <div class="wordmark">
     <span class="wordmark-name">Dr. Cliff</span>
     <span class="wordmark-tag">The Voice of 67,000 Pediatricians</span>
@@ -469,291 +395,299 @@
   <div class="aap-badge">American Academy of Pediatrics</div>
 </div>
 
-<!-- Listening indicator -->
-<div class="listen-indicator" id="listenIndicator">
+<!-- LISTEN INDICATOR -->
+<div id="listenIndicator">
   <div class="pulse-dot"></div>
   <span class="listen-label">Listening</span>
 </div>
 
-<!-- Resource card -->
-<div class="resource-card" id="resourceCard">
-  <div class="resource-label" id="resourceLabel">From the AAP</div>
-  <div class="resource-title" id="resourceTitle"></div>
-  <a class="resource-link" id="resourceLink" href="#" target="_blank">
-    <span id="resourceLinkText">Read the full guide</span>
-  </a>
-  <button class="ask-again-btn" id="askAgainBtn">Ask another question</button>
+<!-- RESOURCE CARD -->
+<div id="resourceCard">
+  <div class="rc-label" id="rcLabel">From the AAP</div>
+  <div class="rc-title" id="rcTitle"></div>
+  <a class="rc-link" id="rcLink" href="#" target="_blank" id="rcLinkText">Read the full guide →</a>
+  <button class="rc-again" id="rcAgain">Ask another question</button>
 </div>
 
-<div class="speech-warning" id="speechWarning">Voice recognition unavailable — use tap zones</div>
-
-<!-- Footer -->
-<div class="footer">
+<!-- FOOTER -->
+<div id="footer">
   <div class="mode-toggle">
     <button class="mode-btn active" id="btnDemo" onclick="setMode('demo')">Demo</button>
     <button class="mode-btn" id="btnFull" onclick="setMode('full')">Full</button>
   </div>
-  <div class="status-text" id="statusText">Ready</div>
+  <span id="statusText">Ready</span>
 </div>
 
-<!-- Hidden manual backup tap zones -->
-<div class="manual-triggers">
-  <div class="tap-zone tap-zone-1" onclick="manualTrigger(1)"></div>
-  <div class="tap-zone tap-zone-2" onclick="manualTrigger(2)"></div>
-  <div class="tap-zone tap-zone-3" onclick="manualTrigger(3)"></div>
-  <div class="tap-zone tap-zone-4" onclick="manualTrigger(4)"></div>
-  <div class="tap-zone tap-zone-5" onclick="manualTrigger(5)"></div>
+<!-- HIDDEN TAP ZONES -->
+<div id="tapZones">
+  <div class="tz tz-1" onclick="manualTrigger(1)"></div>
+  <div class="tz tz-2" onclick="manualTrigger(2)"></div>
+  <div class="tz tz-3" onclick="manualTrigger(3)"></div>
+  <div class="tz tz-4" onclick="manualTrigger(4)"></div>
+  <div class="tz tz-5" onclick="manualTrigger(5)"></div>
 </div>
 
 <script>
-// ─── CONFIG ───────────────────────────────────────────────────────
-const ASSETS = 'assets/';
+// ═══════════════════════════════════════════════════════════════════
+// CONFIG
+// ═══════════════════════════════════════════════════════════════════
+const A = 'assets/';
 
-const VIDEOS = {
-  greeting: ASSETS + 'greeting.mp4',
-  loop:     ASSETS + 'loop.mp4',
-  e1:       ASSETS + 'exchange1.mp4',
-  e2:       ASSETS + 'exchange2.mp4',
-  e3:       ASSETS + 'exchange3.mp4',
-  e4:       ASSETS + 'exchange4.mp4',
-  e5:       ASSETS + 'exchange5.mp4',
+const VIDS = {
+  greeting: A + 'greeting.mp4',
+  loop:     A + 'loop.mp4',
+  e1:       A + 'exchange1.mp4',
+  e2:       A + 'exchange2.mp4',
+  e3:       A + 'exchange3.mp4',
+  e4:       A + 'exchange4.mp4',
+  e5:       A + 'exchange5.mp4',
 };
 
-const EXCHANGES = {
-  demo: [
-    {
-      id: 1,
-      video: VIDEOS.e1,
-      keywords: ['spoil'],
-      resource: {
-        label: 'From the AAP',
-        title: 'Why holding your baby builds trust, not bad habits',
-        url: 'https://publications.aap.org/pediatricsinreview/article-abstract/36/1/41/32220/Parent-Infant-Attachment?redirectedFrom=fulltext',
-        linkText: 'Read the full guide →',
-      }
-    },
-    {
-      id: 2,
-      video: VIDEOS.e2,
-      keywords: ['breastfeeding'],
-      resource: {
-        label: 'From the AAP',
-        title: 'Breastfeeding: AAP policy and what the science says',
-        url: 'https://www.healthychildren.org/English/ages-stages/baby/breastfeeding/Pages/Where-We-Stand-Breastfeeding.aspx',
-        linkText: 'Read the full guide →',
-      }
-    },
-    {
-      id: 3,
-      video: VIDEOS.e3,
-      keywords: ['preschool'],
-      resource: {
-        label: 'From the AAP',
-        title: 'How to protect your child during a measles outbreak',
-        url: 'https://www.healthychildren.org/English/safety-prevention/immunizations/Pages/how-to-protect-your-children-during-a-measles-outbreak.aspx',
-        linkText: 'Read the full guide →',
-      }
-    },
-    {
-      id: 4,
-      video: VIDEOS.e4,
-      keywords: ['give kids the measles','vaccines give','actually give'],
-      resource: {
-        label: 'From the AAP',
-        title: 'Measles: what parents need to know right now',
-        url: 'https://www.healthychildren.org/English/health-issues/vaccine-preventable-diseases/Pages/Measles.aspx',
-        linkText: 'Read the full guide →',
-      }
-    },
-    {
-      id: 5,
-      video: VIDEOS.e5,
-      keywords: ['103 degrees','fever of 103'],
-      resource: {
-        label: 'From the AAP',
-        title: 'Fever: when to call the pediatrician',
-        url: 'https://www.healthychildren.org/English/health-issues/conditions/fever/Pages/When-to-Call-the-Pediatrician.aspx',
-        linkText: 'Read the full guide →',
-      }
-    },
-  ]
-};
+const DATA = [
+  {
+    id: 1,
+    video: VIDS.e1,
+    keywords: ['spoil'],
+    label: 'From the AAP',
+    title: 'Why holding your baby builds trust, not bad habits',
+    url: 'https://publications.aap.org/pediatricsinreview/article-abstract/36/1/41/32220/Parent-Infant-Attachment?redirectedFrom=fulltext',
+    linkText: 'Read the AAP guide →',
+  },
+  {
+    id: 2,
+    video: VIDS.e2,
+    keywords: ['breastfeeding'],
+    label: 'From the AAP',
+    title: 'Breastfeeding: AAP policy and what the science says',
+    url: 'https://www.healthychildren.org/English/ages-stages/baby/breastfeeding/Pages/Where-We-Stand-Breastfeeding.aspx',
+    linkText: 'Read the AAP guide →',
+  },
+  {
+    id: 3,
+    video: VIDS.e3,
+    keywords: ['preschool'],
+    label: 'From the AAP',
+    title: 'How to protect your child during a measles outbreak',
+    url: 'https://www.healthychildren.org/English/safety-prevention/immunizations/Pages/how-to-protect-your-children-during-a-measles-outbreak.aspx',
+    linkText: 'Read the AAP guide →',
+  },
+  {
+    id: 4,
+    video: VIDS.e4,
+    keywords: ['give kids the measles', 'vaccines give', 'actually give', 'give children'],
+    label: 'From the AAP',
+    title: 'Measles: what parents need to know right now',
+    url: 'https://www.healthychildren.org/English/health-issues/vaccine-preventable-diseases/Pages/Measles.aspx',
+    linkText: 'Read the AAP guide →',
+  },
+  {
+    id: 5,
+    video: VIDS.e5,
+    keywords: ['103 degrees', 'fever of 103', 'hundred and three'],
+    label: 'From the AAP',
+    title: 'Fever: when to call the pediatrician',
+    url: 'https://www.healthychildren.org/English/health-issues/conditions/fever/Pages/When-to-Call-the-Pediatrician.aspx',
+    linkText: 'Read the AAP guide →',
+  },
+];
 
-EXCHANGES.full = EXCHANGES.demo;
-
-// ─── STATE ────────────────────────────────────────────────────────
-let mode = 'demo';
-let state = 'idle';
+// ═══════════════════════════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════════════════════════
+// States: idle | greeting | listening | playing | result
+let state       = 'idle';
+let mode        = 'demo';
+let cooldown    = false;   // blocks speech matching after trigger
+let restarting  = false;   // prevents recognition restart stacking
 let recognition = null;
-let speechSupported = false;
-let currentExchange = null;
-let greetingDone = false;
-let cooldown = false; // prevents re-triggering during/after exchange
+let speechOK    = false;
 
-const video = document.getElementById('mainVideo');
-const listenIndicator = document.getElementById('listenIndicator');
-const resourceCard = document.getElementById('resourceCard');
-const statusText = document.getElementById('statusText');
+// ═══════════════════════════════════════════════════════════════════
+// DOM REFS
+// ═══════════════════════════════════════════════════════════════════
+const video    = document.getElementById('mainVideo');
+const listenEl = document.getElementById('listenIndicator');
+const cardEl   = document.getElementById('resourceCard');
+const statusEl = document.getElementById('statusText');
 
-// ─── START ────────────────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════════
+// START
+// ═══════════════════════════════════════════════════════════════════
 function handleStart() {
-  const startScreen = document.getElementById('startScreen');
-  startScreen.classList.add('fade-out');
+  const ss = document.getElementById('startScreen');
+  ss.classList.add('hidden');
 
-  // Start mic HERE — inside user gesture — Chrome requires this
-  try { recognition.start(); } catch(e) {}
+  // Start mic HERE inside user gesture — critical for Safari/Chrome
+  micStart();
 
   setTimeout(() => {
-    startScreen.style.display = 'none';
+    ss.style.display = 'none';
     playGreeting();
   }, 800);
 }
 
-// ─── GREETING ─────────────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════════
+// VIDEO CONTROL
+// ═══════════════════════════════════════════════════════════════════
+function loadAndPlay(src, onEnd) {
+  // Completely clear previous state
+  video.onended = null;
+  video.pause();
+
+  video.src = src;
+  video.loop = false;
+
+  const playPromise = video.play();
+  if (playPromise !== undefined) {
+    playPromise.catch(e => console.warn('Play failed:', e));
+  }
+
+  if (onEnd) {
+    video.onended = function() {
+      video.onended = null; // clear immediately to prevent double-fire
+      onEnd();
+    };
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// GREETING
+// ═══════════════════════════════════════════════════════════════════
 function playGreeting() {
   state = 'greeting';
   setStatus('Playing…');
-  hideResourceCard();
-  hideListenIndicator();
+  hideCard();
+  hideListen();
 
-  video.src = VIDEOS.greeting;
-  video.loop = false;
-  video.play().catch(e => console.warn(e));
-
-  video.onended = () => {
-    video.onended = null;
-    greetingDone = true;
-    // Freeze on last frame, open mic
+  loadAndPlay(VIDS.greeting, () => {
+    // Greeting done — go to listening freeze
     state = 'listening';
     setStatus('Listening…');
-    showListenIndicator();
-    startMic();
-  };
+    showListen();
+    cooldown = false;
+  });
 }
 
-// ─── EXCHANGE ─────────────────────────────────────────────────────
-function triggerExchange(exchange) {
+// ═══════════════════════════════════════════════════════════════════
+// EXCHANGE
+// ═══════════════════════════════════════════════════════════════════
+function triggerExchange(ex) {
   if (state === 'greeting') return;
-  if (state === 'playing' && currentExchange && currentExchange.id === exchange.id) return;
   if (cooldown) return;
+  if (state === 'playing') return; // don't interrupt playing exchange
 
-  // Set cooldown — ignore all speech for 4 seconds
+  // Lock out for duration of exchange + buffer
   cooldown = true;
-  setTimeout(() => { cooldown = false; }, 4000);
-
-  currentExchange = exchange;
   state = 'playing';
-  setStatus('Exchange ' + exchange.id);
+  setStatus('Playing…');
 
-  hideResourceCard();
-  hideListenIndicator();
+  hideCard();
+  hideListen();
 
-  video.onended = null;
-  video.src = exchange.video;
-  video.loop = false;
-  video.play().catch(e => console.warn(e));
-
-  video.onended = () => {
-    video.onended = null;
-    showResult(exchange);
-  };
+  loadAndPlay(ex.video, () => {
+    showResult(ex);
+  });
 }
 
-// ─── RESULT — freeze frame ─────────────────────────────────────────
-function showResult(exchange) {
+// ═══════════════════════════════════════════════════════════════════
+// RESULT
+// ═══════════════════════════════════════════════════════════════════
+function showResult(ex) {
   state = 'result';
-  video.pause();
+  video.pause(); // hold freeze frame
+
   setStatus('Ask another question');
-  showResourceCard(exchange.resource);
-  showListenIndicator();
-  // Clear cooldown after exchange ends so next question works
+  showCard(ex);
+  showListen();
+
+  // Clear cooldown — ready for next question
   cooldown = false;
 }
 
-// ─── RESOURCE CARD ────────────────────────────────────────────────
-function showResourceCard(resource) {
-  document.getElementById('resourceLabel').textContent = resource.label;
-  document.getElementById('resourceTitle').textContent = resource.title;
-  document.getElementById('resourceLinkText').textContent = resource.linkText;
-  const link = document.getElementById('resourceLink');
-  link.href = resource.url;
-  link.target = '_blank';
-  setTimeout(() => resourceCard.classList.add('visible'), 80);
+// ═══════════════════════════════════════════════════════════════════
+// RESOURCE CARD
+// ═══════════════════════════════════════════════════════════════════
+function showCard(ex) {
+  document.getElementById('rcLabel').textContent = ex.label;
+  document.getElementById('rcTitle').textContent = ex.title;
+  const link = document.getElementById('rcLink');
+  link.href = ex.url;
+  link.textContent = ex.linkText;
+  setTimeout(() => cardEl.classList.add('visible'), 80);
 }
 
-function hideResourceCard() {
-  resourceCard.classList.remove('visible');
+function hideCard() {
+  cardEl.classList.remove('visible');
 }
 
-document.getElementById('askAgainBtn').addEventListener('click', () => {
-  hideResourceCard();
+document.getElementById('rcAgain').addEventListener('click', () => {
+  hideCard();
   state = 'listening';
   setStatus('Listening…');
+  cooldown = false;
 });
 
-// ─── LISTEN INDICATOR ─────────────────────────────────────────────
-function showListenIndicator() { listenIndicator.classList.add('visible'); }
-function hideListenIndicator() { listenIndicator.classList.remove('visible'); }
+// ═══════════════════════════════════════════════════════════════════
+// LISTEN INDICATOR
+// ═══════════════════════════════════════════════════════════════════
+function showListen() { listenEl.classList.add('visible'); }
+function hideListen() { listenEl.classList.remove('visible'); }
 
-// ─── SPEECH ───────────────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════════
+// SPEECH RECOGNITION
+// ═══════════════════════════════════════════════════════════════════
 function initSpeech() {
   const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-  if (!SR) {
-    document.getElementById('speechWarning').style.display = 'block';
-    speechSupported = false;
-    return;
-  }
-  speechSupported = true;
+  if (!SR) { speechOK = false; return; }
+
+  speechOK = true;
   recognition = new SR();
   recognition.continuous = true;
-  recognition.interimResults = false;
+  recognition.interimResults = false; // final results only — wait for pause
   recognition.lang = 'en-US';
+  recognition.maxAlternatives = 1;
 
   recognition.onresult = (e) => {
-    // Only match when we're in a state that should respond
-    if (state === 'idle' || state === 'greeting') return;
+    if (cooldown) return;
+    if (state === 'idle' || state === 'greeting' || state === 'playing') return;
+
     let transcript = '';
     for (let i = e.resultIndex; i < e.results.length; i++) {
       if (e.results[i].isFinal) {
         transcript += e.results[i][0].transcript;
       }
     }
-    if (!transcript.trim()) return;
-    transcript = transcript.toLowerCase();
+
+    transcript = transcript.trim().toLowerCase();
+    if (!transcript) return;
+
     console.log('Heard:', transcript, '| State:', state);
     matchKeywords(transcript);
   };
 
-  let isRestarting = false;
-
   recognition.onerror = (e) => {
-    if (e.error === 'not-allowed') {
-      document.getElementById('speechWarning').style.display = 'block';
-      return;
-    }
     console.warn('Speech error:', e.error);
+    // Don't restart on 'aborted' — onend handles it
   };
 
   recognition.onend = () => {
-    if (isRestarting) return;
-    isRestarting = true;
+    if (restarting) return;
+    restarting = true;
     setTimeout(() => {
-      isRestarting = false;
-      try { recognition.start(); } catch(e) {}
-    }, 250);
+      restarting = false;
+      micStart();
+    }, 200);
   };
-
-  // Start immediately on init
-  try { recognition.start(); } catch(e) {}
 }
 
-function startMic() { /* mic always running */ }
-function stopMic() { /* mic always running */ }
+function micStart() {
+  if (!speechOK || !recognition) return;
+  try { recognition.start(); } catch(e) { /* already running */ }
+}
 
 function matchKeywords(transcript) {
-  if (cooldown) return; // ignore speech during cooldown
-  const exchanges = EXCHANGES[mode];
-  for (const ex of exchanges) {
+  const list = DATA; // always use full DATA regardless of mode
+  for (const ex of list) {
     for (const kw of ex.keywords) {
       if (transcript.includes(kw)) {
         triggerExchange(ex);
@@ -763,23 +697,35 @@ function matchKeywords(transcript) {
   }
 }
 
-// ─── MODE ─────────────────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════════
+// MODE TOGGLE
+// ═══════════════════════════════════════════════════════════════════
 function setMode(m) {
   mode = m;
   document.getElementById('btnDemo').classList.toggle('active', m === 'demo');
   document.getElementById('btnFull').classList.toggle('active', m === 'full');
 }
 
-// ─── MANUAL BACKUP TAPS ───────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════════
+// MANUAL TAP ZONES
+// ═══════════════════════════════════════════════════════════════════
 function manualTrigger(n) {
-  const exchange = EXCHANGES[mode].find(e => e.id === n);
-  if (exchange) triggerExchange(exchange);
+  const ex = DATA.find(e => e.id === n);
+  if (ex) {
+    cooldown = false; // manual always works
+    state = 'listening'; // reset state so trigger fires
+    triggerExchange(ex);
+  }
 }
 
-// ─── STATUS ───────────────────────────────────────────────────────
-function setStatus(text) { statusText.textContent = text; }
+// ═══════════════════════════════════════════════════════════════════
+// STATUS
+// ═══════════════════════════════════════════════════════════════════
+function setStatus(t) { statusEl.textContent = t; }
 
-// ─── BOOT ─────────────────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════════
+// BOOT
+// ═══════════════════════════════════════════════════════════════════
 initSpeech();
 </script>
 </body>
