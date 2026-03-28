@@ -166,7 +166,7 @@
 
   .wordmark-name {
     font-family: 'Playfair Display', serif;
-    font-size: 22px;
+    font-size: 20px;
     font-weight: 700;
     color: var(--cream);
     letter-spacing: 0.02em;
@@ -174,22 +174,17 @@
 
   .wordmark-tag {
     font-family: 'Courier Prime', monospace;
-    font-size: 10px;
+    font-size: 9px;
     color: var(--gold);
     letter-spacing: 0.15em;
     text-transform: uppercase;
   }
 
-  .aap-badge {
-    font-family: 'Courier Prime', monospace;
-    font-size: 9px;
-    color: var(--gold);
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    opacity: 0.8;
-    border: 1px solid rgba(181,145,88,0.3);
-    padding: 5px 10px;
-    border-radius: 2px;
+  .aap-logo {
+    height: 48px;
+    width: auto;
+    opacity: 0.7;
+    filter: brightness(0) invert(1);
   }
 
   /* ─── LISTENING INDICATOR ──────────────────────────────────── */
@@ -423,9 +418,9 @@
 <div class="header">
   <div class="wordmark">
     <span class="wordmark-name">Dr. Cliff</span>
-    <span class="wordmark-tag">67,000 Pediatricians Strong</span>
+    <span class="wordmark-tag">The Voice of 67,000 Pediatricians</span>
   </div>
-  <div class="aap-badge">American Academy of Pediatrics</div>
+  <img class="aap-logo" src="assets/aap-logo.png" alt="American Academy of Pediatrics" />
 </div>
 
 <!-- Listening indicator -->
@@ -569,7 +564,6 @@ function playGreeting() {
   setStatus('Playing…');
   hideResourceCard();
   hideListenIndicator();
-  stopMic();
 
   video.src = VIDEOS.greeting;
   video.loop = false;
@@ -578,22 +572,12 @@ function playGreeting() {
   video.onended = () => {
     video.onended = null;
     greetingDone = true;
-    goListening();
+    // Freeze on last frame, open mic
+    state = 'listening';
+    setStatus('Listening…');
+    showListenIndicator();
+    startMic();
   };
-}
-
-// ─── LISTENING — plays loop ────────────────────────────────────────
-function goListening() {
-  state = 'listening';
-  setStatus('Listening…');
-  hideResourceCard();
-
-  video.src = VIDEOS.loop;
-  video.loop = true;
-  video.play().catch(e => console.warn(e));
-
-  showListenIndicator();
-  startMic();
 }
 
 // ─── EXCHANGE ─────────────────────────────────────────────────────
@@ -607,15 +591,11 @@ function triggerExchange(exchange) {
 
   hideResourceCard();
   hideListenIndicator();
-  stopMic();
 
   video.onended = null;
   video.src = exchange.video;
   video.loop = false;
   video.play().catch(e => console.warn(e));
-
-  // Mic on for voice interrupt
-  startMic();
 
   video.onended = () => {
     video.onended = null;
@@ -630,7 +610,6 @@ function showResult(exchange) {
   setStatus('Ask another question');
   showResourceCard(exchange.resource);
   showListenIndicator();
-  startMic();
 }
 
 // ─── RESOURCE CARD ────────────────────────────────────────────────
@@ -649,7 +628,9 @@ function hideResourceCard() {
 }
 
 document.getElementById('askAgainBtn').addEventListener('click', () => {
-  goListening();
+  hideResourceCard();
+  state = 'listening';
+  setStatus('Listening…');
 });
 
 // ─── LISTEN INDICATOR ─────────────────────────────────────────────
@@ -671,6 +652,7 @@ function initSpeech() {
   recognition.lang = 'en-US';
 
   recognition.onresult = (e) => {
+    // Only match when we're in a state that should respond
     if (state === 'idle' || state === 'greeting') return;
     let transcript = '';
     for (let i = e.resultIndex; i < e.results.length; i++) {
@@ -680,29 +662,28 @@ function initSpeech() {
     }
     if (!transcript.trim()) return;
     transcript = transcript.toLowerCase();
+    console.log('Heard:', transcript, '| State:', state);
     matchKeywords(transcript);
   };
 
   recognition.onerror = (e) => {
-    if (e.error !== 'no-speech') console.warn('Speech error:', e.error);
-  };
-
-  recognition.onend = () => {
-    if (state !== 'idle' && state !== 'greeting') {
-      try { recognition.start(); } catch(e) {}
+    if (e.error === 'not-allowed') {
+      document.getElementById('speechWarning').style.display = 'block';
     }
+    console.warn('Speech error:', e.error);
   };
-}
 
-function startMic() {
-  if (!speechSupported) return;
+  // Always restart — never let it die
+  recognition.onend = () => {
+    try { recognition.start(); } catch(e) {}
+  };
+
+  // Start immediately on init
   try { recognition.start(); } catch(e) {}
 }
 
-function stopMic() {
-  if (!speechSupported || !recognition) return;
-  try { recognition.stop(); } catch(e) {}
-}
+function startMic() { /* mic always running */ }
+function stopMic() { /* mic always running */ }
 
 function matchKeywords(transcript) {
   const exchanges = EXCHANGES[mode];
