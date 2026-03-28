@@ -160,16 +160,17 @@
 
   .wordmark {
     display: flex;
-    align-items: baseline;
-    gap: 10px;
+    flex-direction: column;
+    gap: 3px;
   }
 
   .wordmark-name {
     font-family: 'Playfair Display', serif;
-    font-size: 20px;
+    font-size: 22px;
     font-weight: 700;
     color: var(--cream);
     letter-spacing: 0.02em;
+    line-height: 1;
   }
 
   .wordmark-tag {
@@ -183,9 +184,10 @@
   .aap-logo {
     height: 44px;
     width: auto;
-    opacity: 0.7;
+    opacity: 0.65;
     filter: invert(1);
     mix-blend-mode: screen;
+    display: block;
   }
 
   /* ─── LISTENING INDICATOR ──────────────────────────────────── */
@@ -598,11 +600,6 @@ function triggerExchange(exchange) {
   video.loop = false;
   video.play().catch(e => console.warn(e));
 
-  // Restart mic after video settles
-  setTimeout(() => {
-    try { recognition.start(); } catch(e) {}
-  }, 500);
-
   video.onended = () => {
     video.onended = null;
     showResult(exchange);
@@ -672,24 +669,23 @@ function initSpeech() {
     matchKeywords(transcript);
   };
 
+  let isRestarting = false;
+
   recognition.onerror = (e) => {
     if (e.error === 'not-allowed') {
       document.getElementById('speechWarning').style.display = 'block';
-    }
-    // On abort, restart after short delay
-    if (e.error === 'aborted') {
-      setTimeout(() => {
-        try { recognition.start(); } catch(e) {}
-      }, 300);
+      return;
     }
     console.warn('Speech error:', e.error);
   };
 
-  // Always restart — never let it die
   recognition.onend = () => {
+    if (isRestarting) return;
+    isRestarting = true;
     setTimeout(() => {
+      isRestarting = false;
       try { recognition.start(); } catch(e) {}
-    }, 100);
+    }, 250);
   };
 
   // Start immediately on init
