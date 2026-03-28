@@ -389,6 +389,8 @@
   .tap-zone-5 { top: 50%; left: 0; transform: translateY(-50%); }
 
   .speech-warning { display: none !important; }
+
+  @media (max-width: 768px) {
     .video-wrap video {
       object-position: center top;
     }
@@ -416,7 +418,7 @@
     }
 
     .resource-card {
-      padding: 16px 20px 24px;
+      padding: 16px 20px 100px;
     }
 
     .resource-title {
@@ -425,6 +427,18 @@
 
     .footer {
       padding: 12px 20px;
+    }
+
+    .start-name {
+      font-size: 52px;
+    }
+
+    .start-title {
+      font-size: 14px;
+    }
+
+    .start-btn {
+      padding: 12px 32px;
     }
   }
 </style>
@@ -435,7 +449,7 @@
 <div class="start-screen" id="startScreen" onclick="handleStart()">
   <div class="start-eyebrow">American Academy of Pediatrics</div>
   <div class="start-name">Dr. Cliff</div>
-  <div class="start-title">Voice of 67,000 Pediatricians</div>
+  <div class="start-title">The Voice of 67,000 Pediatricians</div>
   <div class="start-rule"></div>
   <button class="start-btn">Meet Dr. Cliff</button>
   <div class="start-aap">A parent's cure for medical misinformation</div>
@@ -510,7 +524,7 @@ const EXCHANGES = {
     {
       id: 1,
       video: VIDEOS.e1,
-      keywords: ['spoil','holding'],
+      keywords: ['spoil'],
       resource: {
         label: 'From the AAP',
         title: 'Why holding your baby builds trust, not bad habits',
@@ -521,7 +535,7 @@ const EXCHANGES = {
     {
       id: 2,
       video: VIDEOS.e2,
-      keywords: ['breastfeeding','hungry'],
+      keywords: ['breastfeeding'],
       resource: {
         label: 'From the AAP',
         title: 'Breastfeeding: AAP policy and what the science says',
@@ -532,7 +546,7 @@ const EXCHANGES = {
     {
       id: 3,
       video: VIDEOS.e3,
-      keywords: ['preschool','mandatory'],
+      keywords: ['preschool'],
       resource: {
         label: 'From the AAP',
         title: 'How to protect your child during a measles outbreak',
@@ -543,7 +557,7 @@ const EXCHANGES = {
     {
       id: 4,
       video: VIDEOS.e4,
-      keywords: ["but i've heard","i've heard"],
+      keywords: ['give kids the measles','vaccines give','actually give'],
       resource: {
         label: 'From the AAP',
         title: 'Measles: what parents need to know right now',
@@ -554,7 +568,7 @@ const EXCHANGES = {
     {
       id: 5,
       video: VIDEOS.e5,
-      keywords: ['103','pulling on his ear','pulling on her ear'],
+      keywords: ['103 degrees','fever of 103'],
       resource: {
         label: 'From the AAP',
         title: 'Fever: when to call the pediatrician',
@@ -574,6 +588,7 @@ let recognition = null;
 let speechSupported = false;
 let currentExchange = null;
 let greetingDone = false;
+let cooldown = false; // prevents re-triggering during/after exchange
 
 const video = document.getElementById('mainVideo');
 const listenIndicator = document.getElementById('listenIndicator');
@@ -620,6 +635,11 @@ function playGreeting() {
 function triggerExchange(exchange) {
   if (state === 'greeting') return;
   if (state === 'playing' && currentExchange && currentExchange.id === exchange.id) return;
+  if (cooldown) return;
+
+  // Set cooldown — ignore all speech for 4 seconds
+  cooldown = true;
+  setTimeout(() => { cooldown = false; }, 4000);
 
   currentExchange = exchange;
   state = 'playing';
@@ -646,6 +666,8 @@ function showResult(exchange) {
   setStatus('Ask another question');
   showResourceCard(exchange.resource);
   showListenIndicator();
+  // Clear cooldown after exchange ends so next question works
+  cooldown = false;
 }
 
 // ─── RESOURCE CARD ────────────────────────────────────────────────
@@ -729,6 +751,7 @@ function startMic() { /* mic always running */ }
 function stopMic() { /* mic always running */ }
 
 function matchKeywords(transcript) {
+  if (cooldown) return; // ignore speech during cooldown
   const exchanges = EXCHANGES[mode];
   for (const ex of exchanges) {
     for (const kw of ex.keywords) {
