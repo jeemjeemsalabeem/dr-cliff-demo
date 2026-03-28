@@ -388,8 +388,44 @@
   .tap-zone-4 { bottom: 0; right: 0; }
   .tap-zone-5 { top: 50%; left: 0; transform: translateY(-50%); }
 
-  .speech-warning {
-    display: none !important;
+  .speech-warning { display: none !important; }
+    .video-wrap video {
+      object-position: center top;
+    }
+
+    .header {
+      padding: 16px 20px;
+    }
+
+    .wordmark-name {
+      font-size: 16px;
+    }
+
+    .wordmark-tag {
+      font-size: 7px;
+      letter-spacing: 0.1em;
+    }
+
+    .aap-badge {
+      font-size: 7px;
+      padding: 4px 8px;
+    }
+
+    .listen-indicator {
+      bottom: 80px;
+    }
+
+    .resource-card {
+      padding: 16px 20px 24px;
+    }
+
+    .resource-title {
+      font-size: 13px;
+    }
+
+    .footer {
+      padding: 12px 20px;
+    }
   }
 </style>
 </head>
@@ -474,7 +510,7 @@ const EXCHANGES = {
     {
       id: 1,
       video: VIDEOS.e1,
-      keywords: ['mom','spoil','holding'],
+      keywords: ['spoil','holding'],
       resource: {
         label: 'From the AAP',
         title: 'Why holding your baby builds trust, not bad habits',
