@@ -52,7 +52,7 @@
 
   /* Header */
   .header {
-    position: absolute;
+    position: fixed;
     top: 0;
     left: 0;
     right: 0;
@@ -61,6 +61,7 @@
     align-items: center;
     justify-content: space-between;
     z-index: 10;
+    background: linear-gradient(to bottom, rgba(46,58,52,0.7) 0%, transparent 100%);
   }
 
   .wordmark {
@@ -99,14 +100,14 @@
 
   /* Video container */
   .video-wrap {
-    position: relative;
-    width: 85vw;
-    max-width: 1100px;
-    aspect-ratio: 16/9;
-    max-height: 80vh;
-    border-radius: 4px;
+    position: fixed;
+    inset: 0;
+    width: 100vw;
+    height: 100vh;
+    border-radius: 0;
     overflow: hidden;
-    box-shadow: 0 40px 120px rgba(0,0,0,0.6), 0 0 0 1px rgba(181,145,88,0.15);
+    box-shadow: none;
+    z-index: 1;
   }
 
   .video-wrap video {
@@ -163,15 +164,17 @@
 
   /* Resource card */
   .resource-card {
-    position: absolute;
+    position: fixed;
     bottom: 0;
     left: 0;
     right: 0;
-    background: var(--cream);
-    padding: 20px 24px 24px;
+    background: rgba(243,235,221,0.96);
+    backdrop-filter: blur(12px);
+    padding: 20px 40px 32px;
     transform: translateY(100%);
     transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
     border-top: 3px solid var(--gold);
+    z-index: 20;
   }
 
   .resource-card.visible {
@@ -248,7 +251,7 @@
 
   /* Footer */
   .footer {
-    position: absolute;
+    position: fixed;
     bottom: 0;
     left: 0;
     right: 0;
@@ -257,6 +260,7 @@
     align-items: center;
     justify-content: space-between;
     z-index: 10;
+    background: linear-gradient(to top, rgba(46,58,52,0.6) 0%, transparent 100%);
   }
 
   .mode-toggle {
@@ -529,7 +533,7 @@ const EXCHANGES = {
       resource: {
         label: 'From the AAP',
         title: 'Why holding your baby builds trust, not bad habits',
-        url: 'https://www.healthychildren.org/English/ages-stages/baby/Pages/Babys-First-1000-Days-AAP-Policy-Explained.aspx',
+        url: 'https://publications.aap.org/pediatricsinreview/article-abstract/36/1/41/32220/Parent-Infant-Attachment?redirectedFrom=fulltext',
         linkText: 'Read the full guide →',
         isPDF: false,
       }
@@ -721,8 +725,12 @@ function initSpeech() {
     if (state !== 'listening' && state !== 'playing' && state !== 'result') return;
     let transcript = '';
     for (let i = e.resultIndex; i < e.results.length; i++) {
-      transcript += e.results[i][0].transcript;
+      // Only act on final results — wait for natural pause
+      if (e.results[i].isFinal) {
+        transcript += e.results[i][0].transcript;
+      }
     }
+    if (!transcript) return;
     transcript = transcript.toLowerCase();
     matchKeywords(transcript);
   };
