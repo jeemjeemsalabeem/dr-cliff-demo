@@ -325,6 +325,9 @@
     position: fixed;
     inset: 0;
     background: var(--navy);
+    background-image: url('assets/poster.png');
+    background-size: cover;
+    background-position: center top;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -332,6 +335,19 @@
     z-index: 100;
     cursor: pointer;
     transition: opacity 0.8s ease;
+  }
+
+  .start-screen::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to bottom, rgba(46,58,52,0.55) 0%, rgba(46,58,52,0.75) 100%);
+    z-index: 0;
+  }
+
+  .start-screen > * {
+    position: relative;
+    z-index: 1;
   }
 
   .start-screen.fade-out {
@@ -345,7 +361,7 @@
     letter-spacing: 0.25em;
     text-transform: uppercase;
     color: var(--gold);
-    opacity: 0.8;
+    opacity: 0.9;
     margin-bottom: 20px;
   }
 
@@ -356,6 +372,7 @@
     color: var(--cream);
     line-height: 1;
     margin-bottom: 6px;
+    text-shadow: 0 2px 20px rgba(0,0,0,0.4);
   }
 
   .start-title {
@@ -364,7 +381,7 @@
     font-weight: 300;
     font-style: italic;
     color: var(--cream);
-    opacity: 0.6;
+    opacity: 0.75;
     margin-bottom: 48px;
   }
 
@@ -402,7 +419,7 @@
     letter-spacing: 0.18em;
     text-transform: uppercase;
     color: var(--gold);
-    opacity: 0.5;
+    opacity: 0.6;
   }
 
   /* Error / unsupported browser message */
@@ -426,7 +443,7 @@
 <div class="start-screen" id="startScreen" onclick="handleStart()">
   <div class="start-eyebrow">American Academy of Pediatrics</div>
   <div class="start-name">Dr. Cliff</div>
-  <div class="start-title">Voice of 70,000 Pediatricians</div>
+  <div class="start-title">Voice of 67,000 Pediatricians</div>
   <div class="start-rule"></div>
   <button class="start-btn">Meet Dr. Cliff</button>
   <div class="start-aap">A parent's cure for medical misinformation</div>
@@ -439,7 +456,7 @@
   <div class="header">
     <div class="wordmark">
       <span class="wordmark-name">Dr. Cliff</span>
-      <span class="wordmark-tag">Pediatric Knowledge Agent</span>
+      <span class="wordmark-tag">67,000 Pediatricians Strong</span>
     </div>
     <div class="aap-badge">American Academy of Pediatrics</div>
   </div>
@@ -601,11 +618,40 @@ function startGreeting() {
   setState('greeting');
   playVideo(VIDEOS.greeting, () => {
     greetingDone = true;
-    startListening();
+    // After greeting — play loop and listen
+    playLoop();
+    showListenIndicator();
+    startListeningMic();
+    setStatus('Listening…');
+    setState('listening');
   });
 }
 
-// ─── VIDEO PLAYBACK ───────────────────────────────────────────────
+// ─── EXCHANGE TRIGGER ─────────────────────────────────────────────
+function triggerExchange(exchange) {
+  // Allow interrupt anytime except during greeting
+  if (state === 'greeting') return;
+  currentExchange = exchange;
+  setState('playing');
+  setStatus(`Exchange ${exchange.id}`);
+
+  // Stop any current video, start mic for voice interrupt
+  video.onended = null;
+  hideResourceCard();
+  hideListenIndicator();
+
+  video.src = exchange.video;
+  video.loop = false;
+  video.play().catch(e => console.warn('Video play failed:', e));
+
+  // Start mic immediately for voice interrupt
+  startListeningMic();
+
+  video.onended = () => {
+    video.onended = null;
+    showResultState(exchange);
+  };
+}
 function playVideo(src, onEnd) {
   stopListeningMic();
   hideResourceCard();
@@ -630,10 +676,22 @@ function playLoop() {
 // ─── LISTENING STATE ──────────────────────────────────────────────
 function startListening() {
   setState('listening');
-  playLoop();
+  // Only play loop after greeting — after exchanges we hold freeze frame
+  if (!greetingDone) {
+    playLoop();
+  }
   showListenIndicator();
   startListeningMic();
   setStatus('Listening…');
+}
+
+function freezeAndListen() {
+  // Stop video, hold last frame, open mic
+  setState('result');
+  video.pause();
+  showListenIndicator();
+  startListeningMic();
+  setStatus('Ask another question');
 }
 
 function showListenIndicator() {
@@ -659,7 +717,8 @@ function initSpeech() {
   recognition.lang = 'en-US';
 
   recognition.onresult = (e) => {
-    if (state !== 'listening') return;
+    // Allow interrupt during playing state too
+    if (state !== 'listening' && state !== 'playing' && state !== 'result') return;
     let transcript = '';
     for (let i = e.resultIndex; i < e.results.length; i++) {
       transcript += e.results[i][0].transcript;
@@ -717,13 +776,13 @@ function triggerExchange(exchange) {
 
 function showResultState(exchange) {
   setState('result');
-  // Hold on last frame (video ended, src stays)
-  video.loop = false;
+  // Hold freeze frame — don't play loop
+  video.pause();
 
   // Show resource card
   showResourceCard(exchange.resource);
 
-  // Mic back on — user can ask again
+  // Mic stays open for next question
   showListenIndicator();
   startListeningMic();
   setStatus('Ask another question');
@@ -746,7 +805,11 @@ function hideResourceCard() {
 
 document.getElementById('askAgainBtn').addEventListener('click', () => {
   hideResourceCard();
-  startListening();
+  playLoop();
+  showListenIndicator();
+  startListeningMic();
+  setState('listening');
+  setStatus('Listening…');
 });
 
 // ─── MODE TOGGLE ──────────────────────────────────────────────────
